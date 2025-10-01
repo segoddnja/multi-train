@@ -5,6 +5,7 @@ import type {
   Problem,
   GameScore,
   GameSettings,
+  GameMode,
 } from "../types/game";
 import { GameLogic } from "../utils/gameLogic";
 
@@ -12,6 +13,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   numberOfProblems: 10,
   minFactor: 2,
   maxFactor: 10,
+  mode: "input",
 };
 
 export const useGame = () => {
@@ -98,25 +100,8 @@ export const useGame = () => {
   }, [gameState, gameSession, showCorrectAnswer, handleTimeExpired]);
 
   const startGame = useCallback((settings: GameSettings = DEFAULT_SETTINGS) => {
-    // Generate problems directly here to avoid any import issues
-    const problems: Problem[] = [];
-    for (let i = 0; i < settings.numberOfProblems; i++) {
-      const factor1 =
-        Math.floor(
-          Math.random() * (settings.maxFactor - settings.minFactor + 1)
-        ) + settings.minFactor;
-      const factor2 =
-        Math.floor(
-          Math.random() * (settings.maxFactor - settings.minFactor + 1)
-        ) + settings.minFactor;
-      const problem = {
-        id: i,
-        factor1,
-        factor2,
-        answer: factor1 * factor2,
-      };
-      problems.push(problem);
-    }
+    // Generate problems using the GameLogic with mode support
+    const problems = GameLogic.generateProblems(settings);
 
     const newSession: GameSession = {
       problems,
@@ -127,6 +112,7 @@ export const useGame = () => {
       userAnswers: {},
       correctAnswers: 0,
       totalProblems: problems.length,
+      mode: settings.mode,
     };
 
     // Update state in the correct order
@@ -180,6 +166,54 @@ export const useGame = () => {
     setProblemTimeLeft(gameSession.timePerProblem);
   }, [gameSession, currentAnswer, showCorrectAnswer]);
 
+  const submitMultipleChoiceAnswer = useCallback(
+    (selectedAnswer: number) => {
+      if (!gameSession || showCorrectAnswer) return;
+
+      const currentProblem =
+        gameSession.problems[gameSession.currentProblemIndex];
+      const isCorrect = GameLogic.isAnswerCorrect(
+        currentProblem,
+        selectedAnswer
+      );
+
+      const updatedSession: GameSession = {
+        ...gameSession,
+        userAnswers: {
+          ...gameSession.userAnswers,
+          [currentProblem.id]: selectedAnswer,
+        },
+        correctAnswers: gameSession.correctAnswers + (isCorrect ? 1 : 0),
+        currentProblemIndex: gameSession.currentProblemIndex + 1,
+        currentProblemStartTime: Date.now(),
+      };
+
+      // Check if game is finished
+      if (
+        updatedSession.currentProblemIndex >= updatedSession.problems.length
+      ) {
+        updatedSession.endTime = Date.now();
+        const finalTimeElapsed = Math.floor(
+          (updatedSession.endTime - updatedSession.startTime) / 1000
+        );
+
+        const score = GameLogic.calculateScore(
+          updatedSession.correctAnswers,
+          updatedSession.totalProblems,
+          finalTimeElapsed
+        );
+
+        setGameScore(score);
+        setGameState("finished");
+      } else {
+        setGameSession(updatedSession);
+      }
+
+      setProblemTimeLeft(gameSession.timePerProblem);
+    },
+    [gameSession, showCorrectAnswer]
+  );
+
   const resetGame = useCallback(() => {
     setGameState("start");
     setGameSession(null);
@@ -224,6 +258,7 @@ export const useGame = () => {
     showCorrectAnswer,
     startGame,
     submitAnswer,
+    submitMultipleChoiceAnswer,
     resetGame,
     getCurrentProblem,
     getProgress,

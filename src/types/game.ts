@@ -1,8 +1,11 @@
+export type GameMode = "input" | "multiple-choice";
+
 export interface Problem {
   id: number;
   factor1: number;
   factor2: number;
   answer: number;
+  choices?: number[]; // For multiple choice mode
 }
 
 export interface GameSession {
@@ -15,6 +18,7 @@ export interface GameSession {
   totalProblems: number;
   currentProblemStartTime: number;
   timePerProblem: number; // seconds allowed per problem
+  mode: GameMode; // Game mode selection
 }
 
 export interface GameScore {
@@ -32,4 +36,5 @@ export interface GameSettings {
   numberOfProblems: number;
   minFactor: number;
   maxFactor: number;
+  mode: GameMode;
 }

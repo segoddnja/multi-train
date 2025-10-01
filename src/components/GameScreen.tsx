@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from "react";
-import type { Problem } from "../types/game";
+import type { Problem, GameMode } from "../types/game";
 
 interface GameScreenProps {
   problem: Problem;
   currentAnswer: string;
   onAnswerChange: (answer: string) => void;
   onSubmitAnswer: () => void;
+  onSubmitMultipleChoice: (answer: number) => void;
   progress: { current: number; total: number; percentage: number };
   timeElapsed: number;
   correctAnswers: number;
   problemTimeLeft: number;
   showCorrectAnswer: boolean;
+  gameMode: GameMode;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -18,11 +20,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   currentAnswer,
   onAnswerChange,
   onSubmitAnswer,
+  onSubmitMultipleChoice,
   progress,
   timeElapsed,
   correctAnswers,
   problemTimeLeft,
   showCorrectAnswer,
+  gameMode,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -133,7 +137,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 Moving to next problem...
               </div>
             </div>
-          ) : (
+          ) : gameMode === "input" ? (
             <>
               <div className="mb-6">
                 <input
@@ -157,12 +161,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 Submit Answer
               </button>
             </>
+          ) : (
+            // Multiple choice mode
+            <div className="mb-6">
+              <div className="grid grid-cols-1 gap-3 max-w-xs mx-auto">
+                {problem.choices?.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => onSubmitMultipleChoice(choice)}
+                    disabled={showCorrectAnswer}
+                    className="btn-secondary text-lg py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                  >
+                    {choice}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
         {/* Hint */}
         <div className="text-center text-sm text-gray-500">
-          💡 Tip: Press Enter to quickly submit your answer
+          {gameMode === "input" ? (
+            <>💡 Tip: Press Enter to quickly submit your answer</>
+          ) : (
+            <>💡 Tip: Click the correct answer as quickly as possible</>
+          )}
         </div>
       </div>
     </div>

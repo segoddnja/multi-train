@@ -13,6 +13,7 @@ function App() {
     showCorrectAnswer,
     startGame,
     submitAnswer,
+    submitMultipleChoiceAnswer,
     resetGame,
     getProgress,
     setCurrentAnswer,
@@ -58,11 +59,13 @@ function App() {
           currentAnswer={currentAnswer}
           onAnswerChange={setCurrentAnswer}
           onSubmitAnswer={submitAnswer}
+          onSubmitMultipleChoice={submitMultipleChoiceAnswer}
           progress={getProgress()}
           timeElapsed={timeElapsed}
           correctAnswers={gameSession.correctAnswers}
           problemTimeLeft={problemTimeLeft}
           showCorrectAnswer={showCorrectAnswer}
+          gameMode={gameSession.mode}
         />
       );
     }

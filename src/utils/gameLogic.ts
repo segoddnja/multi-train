@@ -1,18 +1,80 @@
-import type { Problem, GameScore, GameSettings } from "../types/game";
+import type { Problem, GameScore, GameSettings, GameMode } from "../types/game";
 
 export class GameLogic {
-  static generateProblem(id: number, minFactor = 2, maxFactor = 10): Problem {
+  static generateProblem(
+    id: number,
+    minFactor = 2,
+    maxFactor = 10,
+    mode: GameMode = "input"
+  ): Problem {
     const factor1 =
       Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
     const factor2 =
       Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
 
-    return {
+    const problem: Problem = {
       id,
       factor1,
       factor2,
       answer: factor1 * factor2,
     };
+
+    // Generate multiple choice options if needed
+    if (mode === "multiple-choice") {
+      problem.choices = this.generateChoices(problem.answer);
+    }
+
+    return problem;
+  }
+
+  static generateChoices(correctAnswer: number): number[] {
+    const choices = [correctAnswer];
+
+    // Generate 2 wrong answers
+    for (let i = 0; i < 2; i++) {
+      let wrongAnswer: number;
+      do {
+        // Generate plausible wrong answers based on common mistakes
+        const variation = Math.floor(Math.random() * 3) + 1;
+        switch (variation) {
+          case 1:
+            // Add/subtract a small amount
+            wrongAnswer =
+              correctAnswer +
+              (Math.random() < 0.5 ? -1 : 1) *
+                (Math.floor(Math.random() * 10) + 1);
+            break;
+          case 2:
+            // Multiply/divide by a small factor
+            wrongAnswer = Math.floor(
+              correctAnswer * (0.8 + Math.random() * 0.4)
+            );
+            break;
+          case 3:
+            // Common multiplication table errors
+            wrongAnswer =
+              correctAnswer +
+              (Math.random() < 0.5 ? -10 : 10) *
+                (Math.floor(Math.random() * 3) + 1);
+            break;
+          default:
+            wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -5 : 5);
+        }
+
+        // Ensure it's positive and not the same as correct answer or existing wrong answers
+        wrongAnswer = Math.max(1, wrongAnswer);
+      } while (choices.includes(wrongAnswer));
+
+      choices.push(wrongAnswer);
+    }
+
+    // Shuffle the choices
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+
+    return choices;
   }
 
   static generateProblems(settings: GameSettings): Problem[] {
@@ -20,7 +82,12 @@ export class GameLogic {
 
     for (let i = 0; i < settings.numberOfProblems; i++) {
       problems.push(
-        this.generateProblem(i, settings.minFactor, settings.maxFactor)
+        this.generateProblem(
+          i,
+          settings.minFactor,
+          settings.maxFactor,
+          settings.mode
+        )
       );
     }
 
