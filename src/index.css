@@ -10,7 +10,7 @@
 }
 
 .card {
-  @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100 transform transition-all duration-300 hover:shadow-xl;
+  @apply bg-white rounded-xl shadow-lg p-3 sm:p-6 border border-gray-100 transform transition-all duration-300 hover:shadow-xl;
 }
 
 .problem-display {
