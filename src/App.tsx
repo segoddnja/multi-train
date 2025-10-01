@@ -1,7 +1,7 @@
-import { useGame } from './hooks/useGame';
-import { StartScreen } from './components/StartScreen';
-import { GameScreen } from './components/GameScreen';
-import { ResultsScreen } from './components/ResultsScreen';
+import { useGame } from "./hooks/useGame";
+import { StartScreen } from "./components/StartScreen";
+import { GameScreen } from "./components/GameScreen";
+import { ResultsScreen } from "./components/ResultsScreen";
 
 function App() {
   const {
@@ -9,21 +9,27 @@ function App() {
     currentAnswer,
     gameScore,
     timeElapsed,
+    problemTimeLeft,
+    showCorrectAnswer,
     startGame,
     submitAnswer,
     resetGame,
     getProgress,
     setCurrentAnswer,
-    gameSession
+    gameSession,
   } = useGame();
 
   const renderCurrentScreen = () => {
-    if (gameState === 'start') {
+    if (gameState === "start") {
       return <StartScreen onStartGame={startGame} />;
     }
-    
-    if (gameState === 'playing') {
-      if (!gameSession || !gameSession.problems || gameSession.problems.length === 0) {
+
+    if (gameState === "playing") {
+      if (
+        !gameSession ||
+        !gameSession.problems ||
+        gameSession.problems.length === 0
+      ) {
         return (
           <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
             <div className="card max-w-md w-full text-center">
@@ -32,10 +38,10 @@ function App() {
           </div>
         );
       }
-      
+
       const currentProblemIndex = gameSession.currentProblemIndex;
       const problem = gameSession.problems[currentProblemIndex];
-      
+
       if (!problem) {
         return (
           <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -45,7 +51,7 @@ function App() {
           </div>
         );
       }
-      
+
       return (
         <GameScreen
           problem={problem}
@@ -55,32 +61,25 @@ function App() {
           progress={getProgress()}
           timeElapsed={timeElapsed}
           correctAnswers={gameSession.correctAnswers}
+          problemTimeLeft={problemTimeLeft}
+          showCorrectAnswer={showCorrectAnswer}
         />
       );
     }
-    
-    if (gameState === 'finished') {
+
+    if (gameState === "finished") {
       if (!gameScore) {
         return <StartScreen onStartGame={startGame} />;
       }
-      
-      return (
-        <ResultsScreen
-          score={gameScore}
-          onPlayAgain={resetGame}
-        />
-      );
+
+      return <ResultsScreen score={gameScore} onPlayAgain={resetGame} />;
     }
-    
+
     // Default case
     return <StartScreen onStartGame={startGame} />;
   };
 
-  return (
-    <div className="App">
-      {renderCurrentScreen()}
-    </div>
-  );
+  return <div className="App">{renderCurrentScreen()}</div>;
 }
 
 export default App;

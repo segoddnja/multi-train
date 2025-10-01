@@ -13,6 +13,8 @@ export interface GameSession {
   userAnswers: { [problemId: number]: number };
   correctAnswers: number;
   totalProblems: number;
+  currentProblemStartTime: number;
+  timePerProblem: number; // seconds allowed per problem
 }
 
 export interface GameScore {
@@ -24,7 +26,7 @@ export interface GameScore {
   rank: string; // performance rank
 }
 
-export type GameState = 'start' | 'playing' | 'finished';
+export type GameState = "start" | "playing" | "finished";
 
 export interface GameSettings {
   numberOfProblems: number;

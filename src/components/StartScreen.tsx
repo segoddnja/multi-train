@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface StartScreenProps {
   onStartGame: () => void;
@@ -16,7 +16,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
             Test your multiplication skills and improve your speed!
           </p>
         </div>
-        
+
         <div className="mb-6 space-y-3 text-left">
           <div className="flex items-center text-gray-700">
             <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 mr-3">
@@ -37,8 +37,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
             Get scored on accuracy and speed
           </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={() => {
             onStartGame();
           }}
@@ -46,9 +46,10 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
         >
           🚀 Start Training
         </button>
-        
+
         <div className="mt-4 text-sm text-gray-500">
-          Press Enter to submit answers • Be quick and accurate for higher scores!
+          Press Enter to submit answers • Be quick and accurate for higher
+          scores!
         </div>
       </div>
     </div>

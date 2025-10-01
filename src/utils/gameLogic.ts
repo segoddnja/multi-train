@@ -1,25 +1,29 @@
-import type { Problem, GameScore, GameSettings } from '../types/game';
+import type { Problem, GameScore, GameSettings } from "../types/game";
 
 export class GameLogic {
   static generateProblem(id: number, minFactor = 2, maxFactor = 10): Problem {
-    const factor1 = Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
-    const factor2 = Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
-    
+    const factor1 =
+      Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
+    const factor2 =
+      Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
+
     return {
       id,
       factor1,
       factor2,
-      answer: factor1 * factor2
+      answer: factor1 * factor2,
     };
   }
 
   static generateProblems(settings: GameSettings): Problem[] {
     const problems: Problem[] = [];
-    
+
     for (let i = 0; i < settings.numberOfProblems; i++) {
-      problems.push(this.generateProblem(i, settings.minFactor, settings.maxFactor));
+      problems.push(
+        this.generateProblem(i, settings.minFactor, settings.maxFactor)
+      );
     }
-    
+
     return problems;
   }
 
@@ -29,13 +33,13 @@ export class GameLogic {
     timeElapsed: number
   ): GameScore {
     const accuracy = (correctAnswers / totalProblems) * 100;
-    
+
     // Score calculation: Base score from accuracy + time bonus
     // Perfect accuracy gives 1000 points, time bonus reduces for slower times
     const baseScore = (correctAnswers / totalProblems) * 1000;
-    const timeBonus = Math.max(0, 500 - (timeElapsed * 2)); // Lose 2 points per second
+    const timeBonus = Math.max(0, 500 - timeElapsed * 2); // Lose 2 points per second
     const score = Math.round(baseScore + timeBonus);
-    
+
     // Determine rank based on score
     let rank: string;
     if (score >= 1200) rank = "🏆 Math Genius!";
@@ -51,7 +55,7 @@ export class GameLogic {
       accuracy,
       timeElapsed,
       score,
-      rank
+      rank,
     };
   }
 

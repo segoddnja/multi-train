@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import type { Problem } from '../types/game';
+import React, { useEffect, useRef } from "react";
+import type { Problem } from "../types/game";
 
 interface GameScreenProps {
   problem: Problem;
@@ -9,6 +9,8 @@ interface GameScreenProps {
   progress: { current: number; total: number; percentage: number };
   timeElapsed: number;
   correctAnswers: number;
+  problemTimeLeft: number;
+  showCorrectAnswer: boolean;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -18,7 +20,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onSubmitAnswer,
   progress,
   timeElapsed,
-  correctAnswers
+  correctAnswers,
+  problemTimeLeft,
+  showCorrectAnswer,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +34,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   }, [problem.id]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       onSubmitAnswer();
     }
   };
@@ -38,7 +42,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Only allow numbers
-    if (value === '' || /^\d+$/.test(value)) {
+    if (value === "" || /^\d+$/.test(value)) {
       onAnswerChange(value);
     }
   };
@@ -46,8 +50,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const getTimerColor = (): string => {
+    if (problemTimeLeft <= 3) return "bg-red-500";
+    if (problemTimeLeft <= 6) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
+  const timePercentage = (problemTimeLeft / 10) * 100;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -62,15 +74,41 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               ⏱️ {formatTime(timeElapsed)}
             </div>
           </div>
-          
-          {/* Progress bar */}
+
+          {/* Problem progress bar */}
           <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-            <div 
-              className="progress-bar"
+            <div
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress.percentage}%` }}
             ></div>
           </div>
-          
+
+          {/* Timer progress bar */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700">
+                Time left:
+              </span>
+              <span
+                className={`text-sm font-bold ${
+                  problemTimeLeft <= 3
+                    ? "text-red-600"
+                    : problemTimeLeft <= 6
+                    ? "text-yellow-600"
+                    : "text-green-600"
+                }`}
+              >
+                {problemTimeLeft}s
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-100 ease-linear ${getTimerColor()}`}
+                style={{ width: `${timePercentage}%` }}
+              ></div>
+            </div>
+          </div>
+
           <div className="flex justify-between text-sm text-gray-600">
             <span>✅ Correct: {correctAnswers}</span>
             <span>❌ Wrong: {progress.current - correctAnswers}</span>
@@ -82,27 +120,44 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           <div className="problem-display">
             {problem.factor1} × {problem.factor2} = ?
           </div>
-          
-          <div className="mb-6">
-            <input
-              ref={inputRef}
-              type="text"
-              value={currentAnswer}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              placeholder="?"
-              className="answer-input w-32"
-              autoComplete="off"
-            />
-          </div>
-          
-          <button 
-            onClick={onSubmitAnswer}
-            disabled={currentAnswer.trim() === ''}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Submit Answer
-          </button>
+
+          {showCorrectAnswer ? (
+            <div className="mb-6">
+              <div className="text-2xl text-red-600 font-bold mb-2">
+                ⏰ Time's up!
+              </div>
+              <div className="text-xl text-green-600 font-semibold">
+                Correct answer: {problem.answer}
+              </div>
+              <div className="text-sm text-gray-500 mt-2">
+                Moving to next problem...
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={currentAnswer}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="?"
+                  className="answer-input w-32"
+                  autoComplete="off"
+                  disabled={showCorrectAnswer}
+                />
+              </div>
+
+              <button
+                onClick={onSubmitAnswer}
+                disabled={currentAnswer.trim() === "" || showCorrectAnswer}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit Answer
+              </button>
+            </>
+          )}
         </div>
 
         {/* Hint */}
