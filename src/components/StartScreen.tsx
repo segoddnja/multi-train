@@ -23,8 +23,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="card max-w-md w-full text-center">
-        <div className="mb-6">
+      <div className="card max-w-4xl w-full text-center">
+        <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             🧮 Multiplication Trainer
           </h1>
@@ -33,7 +33,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
           </p>
         </div>
 
-        <div className="mb-6 space-y-3 text-left">
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           <div className="flex items-center text-gray-700">
             <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 mr-3">
               1
@@ -60,18 +60,22 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
             Choose Difficulty Level:
           </h2>
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
             {(["easy", "medium", "hard", "expert"] as DifficultyLevel[]).map(
               (difficulty) => {
                 const info = GameLogic.getDifficultyInfo(difficulty);
                 return (
                   <label
                     key={difficulty}
-                    className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      selectedDifficulty === difficulty
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    }`}
                   >
                     <input
                       type="radio"
@@ -83,11 +87,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
                       }
                       className="mr-3 w-4 h-4 text-blue-600"
                     />
-                    <div>
-                      <div className="font-medium text-gray-800">
+                    <div className="text-left">
+                      <div className="font-semibold text-gray-800 text-lg">
                         {info.icon} {info.name}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 mt-1">
                         {info.description}
                       </div>
                     </div>
@@ -98,12 +102,18 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
             Choose Game Mode:
           </h2>
-          <div className="space-y-3">
-            <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+          <div className="grid grid-cols-2 gap-4">
+            <label
+              className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                selectedMode === "input"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              }`}
+            >
               <input
                 type="radio"
                 name="gameMode"
@@ -112,17 +122,23 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
                 onChange={(e) => setSelectedMode(e.target.value as GameMode)}
                 className="mr-3 w-4 h-4 text-blue-600"
               />
-              <div>
-                <div className="font-medium text-gray-800">
-                  ✏️ Type Answer Mode
+              <div className="text-left">
+                <div className="font-semibold text-gray-800 text-lg">
+                  ✏️ Type Answer
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 mt-1">
                   Type the correct answer using the keyboard
                 </div>
               </div>
             </label>
 
-            <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            <label
+              className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                selectedMode === "multiple-choice"
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              }`}
+            >
               <input
                 type="radio"
                 name="gameMode"
@@ -131,11 +147,11 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
                 onChange={(e) => setSelectedMode(e.target.value as GameMode)}
                 className="mr-3 w-4 h-4 text-blue-600"
               />
-              <div>
-                <div className="font-medium text-gray-800">
-                  🎯 Multiple Choice Mode
+              <div className="text-left">
+                <div className="font-semibold text-gray-800 text-lg">
+                  🎯 Multiple Choice
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 mt-1">
                   Click the correct answer from 3 options
                 </div>
               </div>
@@ -143,29 +159,31 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
           </div>
         </div>
 
-        <button
-          onClick={handleStartGame}
-          className="btn-primary w-full text-xl"
-        >
-          🚀 Start Training
-        </button>
+        <div className="flex flex-col items-center">
+          <button
+            onClick={handleStartGame}
+            className="btn-primary text-xl px-12 py-4 mb-6"
+          >
+            🚀 Start Training
+          </button>
 
-        <div className="mt-4 text-sm text-gray-500">
-          {selectedMode === "input" ? (
-            <>
-              Press Enter to submit answers •{" "}
-              {selectedDifficulty === "easy"
-                ? "Take your time!"
-                : "Be quick and accurate for higher scores!"}
-            </>
-          ) : (
-            <>
-              Click the correct answer •{" "}
-              {selectedDifficulty === "easy"
-                ? "Take your time!"
-                : "Be quick and accurate for higher scores!"}
-            </>
-          )}
+          <div className="text-sm text-gray-500 max-w-md text-center">
+            {selectedMode === "input" ? (
+              <>
+                Press Enter to submit answers •{" "}
+                {selectedDifficulty === "easy"
+                  ? "Take your time!"
+                  : "Be quick and accurate for higher scores!"}
+              </>
+            ) : (
+              <>
+                Click the correct answer •{" "}
+                {selectedDifficulty === "easy"
+                  ? "Take your time!"
+                  : "Be quick and accurate for higher scores!"}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
