@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import type { Problem, GameMode, DifficultyLevel } from "../types/game";
+import type { DifficultyLevel, GameMode, Problem } from "../types/game";
 
 interface GameScreenProps {
   problem: Problem;
   currentAnswer: string;
+  // eslint-disable-next-line no-unused-vars
   onAnswerChange: (answer: string) => void;
   onSubmitAnswer: () => void;
+  // eslint-disable-next-line no-unused-vars
   onSubmitMultipleChoice: (answer: number) => void;
   progress: { current: number; total: number; percentage: number };
   timeElapsed: number;
@@ -107,8 +109,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                     problemTimeLeft <= 3
                       ? "text-red-600"
                       : problemTimeLeft <= 6
-                      ? "text-yellow-600"
-                      : "text-green-600"
+                        ? "text-yellow-600"
+                        : "text-green-600"
                   }`}
                 >
                   {problemTimeLeft}s

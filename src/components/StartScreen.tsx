@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import type { GameMode, GameSettings, DifficultyLevel } from "../types/game";
+import type { DifficultyLevel, GameMode, GameSettings } from "../types/game";
 import { GameLogic } from "../utils/gameLogic";
 
 interface StartScreenProps {
+  // eslint-disable-next-line no-unused-vars
   onStartGame: (settings?: GameSettings) => void;
 }
 

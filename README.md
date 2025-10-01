@@ -38,6 +38,7 @@ A modern, interactive web application built with React, TypeScript, and Tailwind
 ## 🏆 Scoring System
 
 Your score is calculated based on:
+
 - **Accuracy**: Correct answers out of total problems
 - **Speed**: Time bonus for quick responses (loses 2 points per second)
 - **Performance Ranks**:
@@ -51,23 +52,27 @@ Your score is calculated based on:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd multiplication-trainer
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -109,17 +114,20 @@ src/
 ## 🎮 Game Features
 
 ### Problem Generation
+
 - Random multiplication problems from 2×2 to 10×10
 - Ensures variety and appropriate difficulty progression
 - No repeated problems in a single session
 
 ### User Experience
+
 - **Keyboard Support**: Press Enter to submit answers
 - **Input Validation**: Only accepts numeric input
 - **Auto-focus**: Input field automatically focused for seamless experience
 - **Visual Feedback**: Immediate visual responses to user actions
 
 ### Performance Tracking
+
 - Real-time timer display
 - Progress bar showing completion percentage
 - Live accuracy tracking
@@ -154,27 +162,27 @@ You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-re
 
 ```js
 // eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import reactX from "eslint-plugin-react-x";
+import reactDom from "eslint-plugin-react-dom";
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
       // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
+      reactX.configs["recommended-typescript"],
       // Enable lint rules for React DOM
       reactDom.configs.recommended,
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
