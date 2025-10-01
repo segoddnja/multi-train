@@ -83,6 +83,13 @@ npm run preview      # Preview production build
 npm run format       # Format code with Prettier
 npm run lint         # Run ESLint checks
 npm run type-check   # Run TypeScript type checking
+
+# End-to-End Testing
+npm run test:e2e        # Run all E2E tests
+npm run test:e2e:ui     # Run tests with Playwright UI
+npm run test:e2e:headed # Run tests in headed mode
+npm run test:e2e:debug  # Debug tests with Playwright
+npm run test:e2e:report # View test report
 ```
 
 ### Code Quality Tools
@@ -113,6 +120,42 @@ This project uses industry-standard tools to enforce code quality:
 - **VSCode**: Auto-formatting on save, extension recommendations
 - **IntelliJ IDEA**: Prettier integration and code style settings
 - **Consistent Experience**: Same formatting across all development environments
+
+### End-to-End Testing
+
+Comprehensive E2E testing suite built with Playwright:
+
+#### Test Framework Features
+
+- **Cross-browser Testing**: Chrome, Firefox, Safari, and mobile browsers
+- **Page Object Model**: Maintainable test architecture with reusable components
+- **Parallel Execution**: Fast test runs with parallel test execution
+- **Rich Reporting**: HTML reports with screenshots, videos, and traces
+- **CI/CD Ready**: Automated testing in GitHub Actions
+
+#### Test Coverage
+
+- **Complete Game Flows**: Start screen → Game session → Results screen
+- **Difficulty Levels**: All 4 difficulty modes with timer validation
+- **Game Modes**: Both input and multiple choice functionality
+- **Scoring System**: Accuracy calculations and performance rankings
+- **User Interactions**: Keyboard shortcuts, form validation, responsive design
+
+#### Test Structure
+
+```
+tests/
+├── pages/              # Page Object Models
+│   ├── StartScreenPage.ts    # Start screen interactions
+│   ├── GameScreenPage.ts     # Game screen interactions
+│   └── ResultsScreenPage.ts  # Results screen interactions
+├── utils/              # Test utilities
+│   └── TestUtils.ts          # Helper functions and common operations
+├── core-game-flow.spec.ts    # Complete game workflow tests
+├── difficulty-levels.spec.ts # Timer and difficulty validation
+├── game-modes.spec.ts        # Input vs multiple choice testing
+└── scoring-validation.spec.ts # Score calculation verification
+```
 
 ### Tech Stack
 

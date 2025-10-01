@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
-  GameState,
-  GameSession,
-  Problem,
   GameScore,
+  GameSession,
   GameSettings,
+  GameState,
+  Problem,
 } from "../types/game";
 import { GameLogic } from "../utils/gameLogic";
 
