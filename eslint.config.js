@@ -1,10 +1,10 @@
 import js from "@eslint/js";
-import globals from "globals";
+import prettierConfig from "eslint-config-prettier";
+import prettier from "eslint-plugin-prettier";
+import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import react from "eslint-plugin-react";
-import prettier from "eslint-plugin-prettier";
-import prettierConfig from "eslint-config-prettier";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default [

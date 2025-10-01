@@ -1,53 +1,43 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
 # 🧮 Multiplication Table Trainer
 
 A modern, interactive web application built with React, TypeScript, and Tailwind CSS that helps students practice multiplication tables and improve their mental math speed.
 
 ## ✨ Features
 
+### Core Functionality
+
+- **4 Difficulty Levels**: Unlimited, 20s, 15s, and 10s time limits per problem
+- **2 Game Modes**: Manual input and multiple choice options
 - **Random Problem Generation**: Creates multiplication problems using factors from 2-10
 - **Smart Scoring System**: Calculates scores based on both accuracy and speed
 - **Real-time Progress Tracking**: Shows current progress, correct answers, and elapsed time
-- **Motivational Feedback**: Provides encouraging messages and performance ranks
+
+### User Experience
+
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Modern UI**: Beautiful animations and smooth transitions using Tailwind CSS
+- **Keyboard Support**: Press Enter to submit answers
+- **Auto-focus**: Input field automatically focused for seamless experience
+- **Visual Feedback**: Immediate visual responses to user actions
 
 ## 🎯 How It Works
 
-1. **Start Screen**: Instructions and motivation to begin training
-2. **Game Session**: 10 random multiplication problems (2×2 to 10×10)
+1. **Start Screen**: Choose difficulty level and game mode with responsive grid layout
+2. **Game Session**: 10 random multiplication problems based on selected difficulty
 3. **Real-time Feedback**: Progress bar, timer, and accuracy tracking
 4. **Results Screen**: Final score, performance breakdown, and improvement tips
 
-## 🏆 Scoring System
+## 🏆 Difficulty Levels
 
-Your score is calculated based on:
+- **🟢 Unlimited**: No time pressure - perfect for learning
+- **🟡 Easy (20s)**: Moderate time limit for building confidence
+- **🟠 Medium (15s)**: Standard challenge for regular practice
+- **� Hard (10s)**: Quick thinking required for advanced users
 
-- **Accuracy**: Correct answers out of total problems
-- **Speed**: Time bonus for quick responses (loses 2 points per second)
-- **Performance Ranks**:
-  - 🏆 Math Genius! (1200+ points)
-  - 🌟 Excellent! (1000+ points)
-  - 👍 Great Job! (800+ points)
-  - 😊 Good Work! (600+ points)
-  - 📚 Keep Practicing! (400+ points)
-  - 💪 You Can Do Better! (below 400 points)
+## 🎮 Game Modes
+
+- **✍️ Input Mode**: Type your answer using the number input
+- **🎯 Multiple Choice**: Select from 4 possible answers
 
 ## 🚀 Getting Started
 
@@ -79,36 +69,83 @@ npm run dev
 
 4. Open your browser and navigate to `http://localhost:5173`
 
-### Building for Production
+## 🛠️ Development
+
+### Available Scripts
 
 ```bash
-npm run build
+# Development
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+
+# Code Quality
+npm run format       # Format code with Prettier
+npm run lint         # Run ESLint checks
+npm run type-check   # Run TypeScript type checking
 ```
 
-## 🛠️ Tech Stack
+### Code Quality Tools
+
+This project uses industry-standard tools to enforce code quality:
+
+#### Prettier
+
+- **Configuration**: `.prettierrc` with consistent formatting rules
+- **Auto-formatting**: Formats code on save in supported IDEs
+- **Pre-commit**: Automatically formats staged files
+
+#### ESLint
+
+- **Modern Config**: ESLint 9 with flat configuration format
+- **TypeScript Support**: Full integration with TypeScript
+- **React Rules**: Specialized rules for React development
+- **Auto-fix**: Many issues can be automatically resolved
+
+#### Husky + lint-staged
+
+- **Pre-commit Hooks**: Runs quality checks before each commit
+- **Optimized**: Only processes staged files for faster execution
+- **Quality Gate**: Prevents commits with formatting or linting issues
+
+#### IDE Integration
+
+- **VSCode**: Auto-formatting on save, extension recommendations
+- **IntelliJ IDEA**: Prettier integration and code style settings
+- **Consistent Experience**: Same formatting across all development environments
+
+### Tech Stack
 
 - **Frontend Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS with custom animations
+- **Build Tool**: Vite with fast HMR
+- **Styling**: Tailwind CSS v4 with custom animations
 - **State Management**: React Hooks (useState, useEffect, useCallback)
 - **Type Safety**: Full TypeScript implementation
+- **Code Quality**: ESLint 9, Prettier, Husky, lint-staged
 
 ## 📁 Project Structure
 
 ```
 src/
 ├── components/          # React components
-│   ├── StartScreen.tsx  # Welcome screen with instructions
-│   ├── GameScreen.tsx   # Main game interface
+│   ├── StartScreen.tsx  # Welcome screen with difficulty/mode selection
+│   ├── GameScreen.tsx   # Main game interface with timer
 │   └── ResultsScreen.tsx # Score and results display
 ├── hooks/               # Custom React hooks
-│   └── useGame.ts       # Game state management
+│   └── useGame.ts       # Game state management with difficulty logic
 ├── types/               # TypeScript type definitions
-│   └── game.ts          # Game-related interfaces
+│   └── game.ts          # Game interfaces including difficulty levels
 ├── utils/               # Utility functions
-│   └── gameLogic.ts     # Core game logic and scoring
-└── styles/
-    └── index.css        # Global styles and Tailwind config
+│   └── gameLogic.ts     # Core game logic, scoring, and difficulty handling
+└── index.css            # Global styles and Tailwind config
+
+.vscode/                 # VSCode workspace settings
+├── settings.json        # Auto-formatting and editor config
+└── extensions.json      # Recommended extensions
+
+.idea/                   # IntelliJ IDEA settings
+├── codeStyles/          # Code style configurations
+└── prettier.xml         # Prettier integration settings
 ```
 
 ## 🎮 Game Features
@@ -118,71 +155,52 @@ src/
 - Random multiplication problems from 2×2 to 10×10
 - Ensures variety and appropriate difficulty progression
 - No repeated problems in a single session
-
-### User Experience
-
-- **Keyboard Support**: Press Enter to submit answers
-- **Input Validation**: Only accepts numeric input
-- **Auto-focus**: Input field automatically focused for seamless experience
-- **Visual Feedback**: Immediate visual responses to user actions
+- Multiple choice options with smart distractor generation
 
 ### Performance Tracking
 
-- Real-time timer display
+- Real-time timer display with difficulty-based limits
 - Progress bar showing completion percentage
 - Live accuracy tracking
 - Motivational messages based on performance
+
+### Scoring System
+
+Your score is calculated based on:
+
+- **Accuracy**: Correct answers out of total problems
+- **Speed**: Time bonus for quick responses
+- **Difficulty Multiplier**: Higher scores for harder difficulty levels
+- **Performance Ranks**: From "Math Genius!" to "Keep Practicing!"
 
 ## 🎨 Design Highlights
 
 - **Modern Gradient Backgrounds**: Beautiful blue-to-indigo gradients
 - **Smooth Animations**: CSS animations for better user engagement
-- **Responsive Cards**: Clean, card-based layout that works on all devices
+- **Responsive Grid Layout**: 2x2 grid for difficulty and mode selection
 - **Interactive Elements**: Hover effects and button animations
 - **Color-coded Feedback**: Different colors for various performance metrics
+- **Mobile-first Design**: Optimized for touch interactions
 
-## 🚀 Future Enhancements
+## 🤝 Contributing
 
-- **Difficulty Levels**: Easy (2-5), Medium (2-8), Hard (2-12)
-- **Custom Settings**: User-defined number of problems and time limits
-- **Progress History**: Track improvement over time
-- **Achievements System**: Badges for milestones and streaks
-- **Sound Effects**: Audio feedback for correct/incorrect answers
-- **Multiplayer Mode**: Compete with friends in real-time
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes following the established code style
+4. Run quality checks: `npm run lint && npm run format && npm run type-check`
+5. Commit your changes (pre-commit hooks will run automatically)
+6. Push to your branch and create a Pull Request
+
+### Code Style Guidelines
+
+- Use TypeScript for all new code
+- Follow the established Prettier configuration
+- Ensure ESLint passes without warnings
+- Add appropriate type definitions
+- Write clear, descriptive commit messages
 
 ## 📝 License
 
 This project is open source and available under the [MIT License](LICENSE).
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
-
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
