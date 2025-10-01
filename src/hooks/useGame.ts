@@ -5,7 +5,6 @@ import type {
   Problem,
   GameScore,
   GameSettings,
-  GameMode,
 } from "../types/game";
 import { GameLogic } from "../utils/gameLogic";
 
@@ -14,6 +13,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   minFactor: 2,
   maxFactor: 10,
   mode: "input",
+  difficulty: "easy",
 };
 
 export const useGame = () => {
@@ -67,7 +67,7 @@ export const useGame = () => {
 
       setCurrentAnswer("");
       setShowCorrectAnswer(false);
-      setProblemTimeLeft(10);
+      setProblemTimeLeft(gameSession.timePerProblem);
     }, 2000);
   }, [gameSession]);
 
@@ -79,17 +79,24 @@ export const useGame = () => {
       interval = setInterval(() => {
         const now = Date.now();
         const totalElapsed = Math.floor((now - gameSession.startTime) / 1000);
-        const problemElapsed = Math.floor(
-          (now - gameSession.currentProblemStartTime) / 1000
-        );
-        const timeLeft = gameSession.timePerProblem - problemElapsed;
-
         setTimeElapsed(totalElapsed);
-        setProblemTimeLeft(Math.max(0, timeLeft));
 
-        // Auto-submit if time runs out
-        if (timeLeft <= 0 && !showCorrectAnswer) {
-          handleTimeExpired();
+        // Only handle timer for limited time modes
+        if (gameSession.timePerProblem > 0) {
+          const problemElapsed = Math.floor(
+            (now - gameSession.currentProblemStartTime) / 1000
+          );
+          const timeLeft = gameSession.timePerProblem - problemElapsed;
+
+          setProblemTimeLeft(Math.max(0, timeLeft));
+
+          // Auto-submit if time runs out
+          if (timeLeft <= 0 && !showCorrectAnswer) {
+            handleTimeExpired();
+          }
+        } else {
+          // Unlimited time mode - no countdown
+          setProblemTimeLeft(0);
         }
       }, 100); // Update more frequently for smooth progress bar
     }
@@ -102,17 +109,19 @@ export const useGame = () => {
   const startGame = useCallback((settings: GameSettings = DEFAULT_SETTINGS) => {
     // Generate problems using the GameLogic with mode support
     const problems = GameLogic.generateProblems(settings);
+    const timePerProblem = GameLogic.getTimePerProblem(settings.difficulty);
 
     const newSession: GameSession = {
       problems,
       currentProblemIndex: 0,
       startTime: Date.now(),
       currentProblemStartTime: Date.now(),
-      timePerProblem: 10,
+      timePerProblem,
       userAnswers: {},
       correctAnswers: 0,
       totalProblems: problems.length,
       mode: settings.mode,
+      difficulty: settings.difficulty,
     };
 
     // Update state in the correct order
@@ -121,6 +130,7 @@ export const useGame = () => {
     setGameScore(null);
     setGameSession(newSession);
     setGameState("playing");
+    setProblemTimeLeft(timePerProblem);
   }, []);
 
   const submitAnswer = useCallback(() => {
@@ -220,7 +230,7 @@ export const useGame = () => {
     setCurrentAnswer("");
     setGameScore(null);
     setTimeElapsed(0);
-    setProblemTimeLeft(10);
+    setProblemTimeLeft(0);
     setShowCorrectAnswer(false);
   }, []);
 

@@ -1,6 +1,65 @@
-import type { Problem, GameScore, GameSettings, GameMode } from "../types/game";
+import type {
+  Problem,
+  GameScore,
+  GameSettings,
+  GameMode,
+  DifficultyLevel,
+} from "../types/game";
 
 export class GameLogic {
+  static getTimePerProblem(difficulty: DifficultyLevel): number {
+    switch (difficulty) {
+      case "easy":
+        return 0; // Unlimited time
+      case "medium":
+        return 20; // 20 seconds
+      case "hard":
+        return 15; // 15 seconds
+      case "expert":
+        return 10; // 10 seconds
+      default:
+        return 10;
+    }
+  }
+
+  static getDifficultyInfo(difficulty: DifficultyLevel): {
+    name: string;
+    description: string;
+    icon: string;
+  } {
+    switch (difficulty) {
+      case "easy":
+        return {
+          name: "Easy",
+          description: "Unlimited time - Take your time to think",
+          icon: "🐌",
+        };
+      case "medium":
+        return {
+          name: "Medium",
+          description: "20 seconds per problem - Moderate pressure",
+          icon: "🚶",
+        };
+      case "hard":
+        return {
+          name: "Hard",
+          description: "15 seconds per problem - Getting challenging!",
+          icon: "🏃",
+        };
+      case "expert":
+        return {
+          name: "Expert",
+          description: "10 seconds per problem - Lightning fast!",
+          icon: "⚡",
+        };
+      default:
+        return {
+          name: "Expert",
+          description: "10 seconds per problem - Lightning fast!",
+          icon: "⚡",
+        };
+    }
+  }
   static generateProblem(
     id: number,
     minFactor = 2,

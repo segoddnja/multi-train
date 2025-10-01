@@ -66,6 +66,8 @@ function App() {
           problemTimeLeft={problemTimeLeft}
           showCorrectAnswer={showCorrectAnswer}
           gameMode={gameSession.mode}
+          difficulty={gameSession.difficulty}
+          maxTimePerProblem={gameSession.timePerProblem}
         />
       );
     }

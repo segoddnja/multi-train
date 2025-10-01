@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import type { Problem, GameMode } from "../types/game";
+import type { Problem, GameMode, DifficultyLevel } from "../types/game";
 
 interface GameScreenProps {
   problem: Problem;
@@ -13,6 +13,8 @@ interface GameScreenProps {
   problemTimeLeft: number;
   showCorrectAnswer: boolean;
   gameMode: GameMode;
+  difficulty: DifficultyLevel;
+  maxTimePerProblem: number;
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({
@@ -27,6 +29,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   problemTimeLeft,
   showCorrectAnswer,
   gameMode,
+  maxTimePerProblem,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,12 +61,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   const getTimerColor = (): string => {
-    if (problemTimeLeft <= 3) return "bg-red-500";
-    if (problemTimeLeft <= 6) return "bg-yellow-500";
+    if (maxTimePerProblem === 0) return "bg-blue-500"; // Unlimited time
+    const ratio = problemTimeLeft / maxTimePerProblem;
+    if (ratio <= 0.3) return "bg-red-500";
+    if (ratio <= 0.6) return "bg-yellow-500";
     return "bg-green-500";
   };
 
-  const timePercentage = (problemTimeLeft / 10) * 100;
+  const timePercentage =
+    maxTimePerProblem === 0 ? 100 : (problemTimeLeft / maxTimePerProblem) * 100;
+
+  const isUnlimitedTime = maxTimePerProblem === 0;
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -88,30 +96,40 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
 
           {/* Timer progress bar */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">
-                Time left:
-              </span>
-              <span
-                className={`text-sm font-bold ${
-                  problemTimeLeft <= 3
-                    ? "text-red-600"
-                    : problemTimeLeft <= 6
-                    ? "text-yellow-600"
-                    : "text-green-600"
-                }`}
-              >
-                {problemTimeLeft}s
-              </span>
+          {!isUnlimitedTime && (
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Time left:
+                </span>
+                <span
+                  className={`text-sm font-bold ${
+                    problemTimeLeft <= 3
+                      ? "text-red-600"
+                      : problemTimeLeft <= 6
+                      ? "text-yellow-600"
+                      : "text-green-600"
+                  }`}
+                >
+                  {problemTimeLeft}s
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-100 ease-linear ${getTimerColor()}`}
+                  style={{ width: `${timePercentage}%` }}
+                ></div>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-100 ease-linear ${getTimerColor()}`}
-                style={{ width: `${timePercentage}%` }}
-              ></div>
+          )}
+
+          {isUnlimitedTime && (
+            <div className="mb-4">
+              <div className="text-center text-sm text-blue-600 font-medium bg-blue-50 py-2 px-4 rounded-lg">
+                🐌 Unlimited Time - Take your time to think!
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex justify-between text-sm text-gray-600">
             <span>✅ Correct: {correctAnswers}</span>

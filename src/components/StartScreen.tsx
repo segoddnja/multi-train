@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import type { GameMode, GameSettings } from "../types/game";
+import type { GameMode, GameSettings, DifficultyLevel } from "../types/game";
+import { GameLogic } from "../utils/gameLogic";
 
 interface StartScreenProps {
   onStartGame: (settings?: GameSettings) => void;
@@ -7,6 +8,8 @@ interface StartScreenProps {
 
 export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
   const [selectedMode, setSelectedMode] = useState<GameMode>("input");
+  const [selectedDifficulty, setSelectedDifficulty] =
+    useState<DifficultyLevel>("easy");
 
   const handleStartGame = () => {
     const settings: GameSettings = {
@@ -14,6 +17,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
       minFactor: 2,
       maxFactor: 10,
       mode: selectedMode,
+      difficulty: selectedDifficulty,
     };
     onStartGame(settings);
   };
@@ -40,7 +44,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
             <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 mr-3">
               2
             </span>
-            You have 10 seconds per problem
+            Choose your difficulty level and game mode
           </div>
           <div className="flex items-center text-gray-700">
             <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 mr-3">
@@ -53,6 +57,44 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
               4
             </span>
             Get scored on accuracy and speed
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-700 mb-3">
+            Choose Difficulty Level:
+          </h2>
+          <div className="space-y-3">
+            {(["easy", "medium", "hard", "expert"] as DifficultyLevel[]).map(
+              (difficulty) => {
+                const info = GameLogic.getDifficultyInfo(difficulty);
+                return (
+                  <label
+                    key={difficulty}
+                    className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      value={difficulty}
+                      checked={selectedDifficulty === difficulty}
+                      onChange={(e) =>
+                        setSelectedDifficulty(e.target.value as DifficultyLevel)
+                      }
+                      className="mr-3 w-4 h-4 text-blue-600"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-800">
+                        {info.icon} {info.name}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {info.description}
+                      </div>
+                    </div>
+                  </label>
+                );
+              }
+            )}
           </div>
         </div>
 
@@ -111,13 +153,17 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
         <div className="mt-4 text-sm text-gray-500">
           {selectedMode === "input" ? (
             <>
-              Press Enter to submit answers • Be quick and accurate for higher
-              scores!
+              Press Enter to submit answers •{" "}
+              {selectedDifficulty === "easy"
+                ? "Take your time!"
+                : "Be quick and accurate for higher scores!"}
             </>
           ) : (
             <>
-              Click the correct answer • Be quick and accurate for higher
-              scores!
+              Click the correct answer •{" "}
+              {selectedDifficulty === "easy"
+                ? "Take your time!"
+                : "Be quick and accurate for higher scores!"}
             </>
           )}
         </div>

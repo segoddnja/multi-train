@@ -1,5 +1,7 @@
 export type GameMode = "input" | "multiple-choice";
 
+export type DifficultyLevel = "easy" | "medium" | "hard" | "expert";
+
 export interface Problem {
   id: number;
   factor1: number;
@@ -17,8 +19,9 @@ export interface GameSession {
   correctAnswers: number;
   totalProblems: number;
   currentProblemStartTime: number;
-  timePerProblem: number; // seconds allowed per problem
+  timePerProblem: number; // seconds allowed per problem (0 = unlimited)
   mode: GameMode; // Game mode selection
+  difficulty: DifficultyLevel; // Difficulty level
 }
 
 export interface GameScore {
@@ -37,4 +40,5 @@ export interface GameSettings {
   minFactor: number;
   maxFactor: number;
   mode: GameMode;
+  difficulty: DifficultyLevel;
 }
