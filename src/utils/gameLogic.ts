@@ -1,9 +1,9 @@
 import type {
-  Problem,
+  DifficultyLevel,
+  GameMode,
   GameScore,
   GameSettings,
-  GameMode,
-  DifficultyLevel,
+  Problem,
 } from "../types/game";
 
 export class GameLogic {
@@ -66,10 +66,8 @@ export class GameLogic {
     maxFactor = 10,
     mode: GameMode = "input"
   ): Problem {
-    const factor1 =
-      Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
-    const factor2 =
-      Math.floor(Math.random() * (maxFactor - minFactor + 1)) + minFactor;
+    const factor1 = this.generateWeightedFactor(minFactor, maxFactor);
+    const factor2 = this.generateWeightedFactor(minFactor, maxFactor);
 
     const problem: Problem = {
       id,
@@ -84,6 +82,32 @@ export class GameLogic {
     }
 
     return problem;
+  }
+
+  /**
+   * Generates a weighted random factor where 10 appears much less frequently
+   */
+  private static generateWeightedFactor(
+    minFactor: number,
+    maxFactor: number
+  ): number {
+    // Create an array of all possible factors with their weights
+    const weightedFactors: number[] = [];
+
+    for (let i = minFactor; i <= maxFactor; i++) {
+      if (i === 10) {
+        // Make 10 appear only 10% as often as other numbers
+        weightedFactors.push(i);
+      } else {
+        // All other numbers get normal weight (10x more likely than 10)
+        for (let j = 0; j < 10; j++) {
+          weightedFactors.push(i);
+        }
+      }
+    }
+
+    // Return a random selection from the weighted array
+    return weightedFactors[Math.floor(Math.random() * weightedFactors.length)];
   }
 
   static generateChoices(correctAnswer: number): number[] {
