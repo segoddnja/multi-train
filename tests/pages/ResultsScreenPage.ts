@@ -1,4 +1,4 @@
-import { Page, Locator } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 
 export class ResultsScreenPage {
   readonly page: Page;
@@ -16,7 +16,7 @@ export class ResultsScreenPage {
   constructor(page: Page) {
     this.page = page;
     this.title = page.getByText("🎉 Training Complete!");
-    this.rank = page.locator("p").nth(1); // Second paragraph after title
+    this.rank = page.locator("p.text-xl.text-gray-600.mb-4"); // The rank paragraph
     this.motivationalMessage = page.locator("p.italic");
     this.finalScore = page.locator(".text-5xl");
     this.accuracy = page.locator(".stat-card").first();
@@ -28,7 +28,11 @@ export class ResultsScreenPage {
   }
 
   async isVisible() {
-    return await this.title.isVisible();
+    try {
+      return await this.title.isVisible({ timeout: 2000 });
+    } catch {
+      return false;
+    }
   }
 
   async getFinalScore() {
@@ -46,7 +50,7 @@ export class ResultsScreenPage {
 
   async getAccuracy() {
     const text = await this.accuracy.locator(".text-2xl").textContent();
-    const match = text?.match(/([\\d.]+)%/);
+    const match = text?.match(/([\d.]+)%/);
     return match ? parseFloat(match[1]) : 0;
   }
 

@@ -1,6 +1,6 @@
-import { test, expect } from "@playwright/test";
-import { StartScreenPage } from "./pages/StartScreenPage.js";
+import { expect, test } from "@playwright/test";
 import { GameScreenPage } from "./pages/GameScreenPage.js";
+import { StartScreenPage } from "./pages/StartScreenPage.js";
 import { TestUtils } from "./utils/TestUtils.js";
 
 test.describe("Difficulty Levels", () => {
@@ -97,16 +97,26 @@ test.describe("Difficulty Levels", () => {
 
     await expect(gameScreen.problemDisplay).toBeVisible();
 
-    // Wait for timeout (10 seconds + buffer)
-    await page.waitForTimeout(12000);
+    // Wait for timeout to occur - expert mode has 10 second limit
+    // We'll wait up to 15 seconds and check periodically for timeout message
+    let timeoutOccurred = false;
+    for (let i = 0; i < 15; i++) {
+      await page.waitForTimeout(1000);
+      const isTimeUp = await gameScreen.isTimeUp();
+      if (isTimeUp) {
+        timeoutOccurred = true;
+        break;
+      }
+    }
 
-    // Verify timeout message appears
-    const isTimeUp = await gameScreen.isTimeUp();
-    expect(isTimeUp).toBe(true);
+    // Verify timeout message appeared
+    expect(timeoutOccurred).toBe(true);
 
-    // Verify correct answer is shown
-    const correctAnswer = await gameScreen.getCorrectAnswer();
-    expect(correctAnswer).toBeGreaterThan(0);
+    // If timeout occurred, also verify correct answer is shown
+    if (timeoutOccurred) {
+      const correctAnswer = await gameScreen.getCorrectAnswer();
+      expect(correctAnswer).toBeGreaterThan(0);
+    }
   });
 
   test("should display appropriate difficulty descriptions", async ({

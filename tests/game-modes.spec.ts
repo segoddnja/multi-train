@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { StartScreenPage } from "./pages/StartScreenPage.js";
+import { expect, test } from "@playwright/test";
 import { GameScreenPage } from "./pages/GameScreenPage.js";
 import { ResultsScreenPage } from "./pages/ResultsScreenPage.js";
+import { StartScreenPage } from "./pages/StartScreenPage.js";
 
 test.describe("Game Modes", () => {
   test("should support input mode with keyboard submission", async ({
@@ -20,7 +20,7 @@ test.describe("Game Modes", () => {
 
     // Test keyboard submission
     const problem = await gameScreen.getProblemText();
-    const match = problem?.match(/(\\d+) × (\\d+)/);
+    const match = problem?.match(/(\d+) × (\d+)/);
     if (match) {
       const answer = parseInt(match[1]) * parseInt(match[2]);
       await gameScreen.typeAnswer(answer.toString());
@@ -60,7 +60,7 @@ test.describe("Game Modes", () => {
 
     // Verify correct answer is among options
     const problem = await gameScreen.getProblemText();
-    const match = problem?.match(/(\\d+) × (\\d+)/);
+    const match = problem?.match(/(\d+) × (\d+)/);
     if (match) {
       const correctAnswer = parseInt(match[1]) * parseInt(match[2]);
       expect(options).toContain(correctAnswer);

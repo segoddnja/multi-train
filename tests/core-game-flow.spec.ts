@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { StartScreenPage } from "./pages/StartScreenPage.js";
+import { expect, test } from "@playwright/test";
 import { GameScreenPage } from "./pages/GameScreenPage.js";
 import { ResultsScreenPage } from "./pages/ResultsScreenPage.js";
+import { StartScreenPage } from "./pages/StartScreenPage.js";
 
 test.describe("Core Game Flow", () => {
   test("should complete a full game session with input mode", async ({
@@ -39,9 +39,11 @@ test.describe("Core Game Flow", () => {
       await gameScreen.typeAnswer(answer.toString());
       await gameScreen.submitAnswer();
 
-      // Verify progress updated
-      const progress = await gameScreen.getCurrentProgress();
-      expect(progress.current).toBeGreaterThan(i);
+      // Verify progress updated (unless this is the last problem)
+      if (i < 9) {
+        const progress = await gameScreen.getCurrentProgress();
+        expect(progress.current).toBeGreaterThan(i);
+      }
     }
 
     // Results screen

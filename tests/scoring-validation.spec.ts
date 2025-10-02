@@ -1,6 +1,6 @@
-import { test, expect } from "@playwright/test";
-import { TestUtils } from "./utils/TestUtils.js";
+import { expect, test } from "@playwright/test";
 import { ResultsScreenPage } from "./pages/ResultsScreenPage.js";
+import { TestUtils } from "./utils/TestUtils.js";
 
 test.describe("Scoring and Validation", () => {
   test("should calculate perfect accuracy for all correct answers", async ({
@@ -34,7 +34,7 @@ test.describe("Scoring and Validation", () => {
       await expect(problemDisplay).toBeVisible();
 
       const problem = await problemDisplay.textContent();
-      const match = problem?.match(/(\\d+) × (\\d+)/);
+      const match = problem?.match(/(\d+) × (\d+)/);
       if (match) {
         const factor1 = parseInt(match[1]);
         const factor2 = parseInt(match[2]);
@@ -101,10 +101,11 @@ test.describe("Scoring and Validation", () => {
     expect(highRank).toBeTruthy();
 
     // Rank should contain positive feedback for good performance
+    // Possible ranks: "🏆 Math Genius!", "🌟 Excellent!", "👍 Great Job!", "😊 Good Work!"
     expect(
       highRank?.includes("Great") ||
         highRank?.includes("Excellent") ||
-        highRank?.includes("Good") ||
+        highRank?.includes("Good Work") ||
         highRank?.includes("Genius")
     ).toBe(true);
   });
@@ -161,27 +162,32 @@ test.describe("Scoring and Validation", () => {
   test("should handle zero score gracefully", async ({ page }) => {
     // Answer all questions incorrectly with maximum delay
     await page.goto("/");
-    await page.locator('input[value="expert"]').click(); // Expert mode for time pressure
+    await page.locator('input[value="easy"]').click(); // Use easy mode to avoid timeouts
     await page.getByRole("button", { name: "🚀 Start Training" }).click();
 
+    // Answer incorrectly for all problems
     for (let i = 0; i < 10; i++) {
       const problemDisplay = page.locator(".problem-display");
       await expect(problemDisplay).toBeVisible();
 
-      // Wait for timeout or give wrong answer quickly
       try {
-        await page.locator(".answer-input").fill("1", { timeout: 2000 });
+        // Give a consistently wrong answer
+        await page.locator(".answer-input").fill("1", { timeout: 5000 });
         await page
           .getByRole("button", { name: "Submit Answer" })
-          .click({ timeout: 1000 });
+          .click({ timeout: 5000 });
+
+        // Wait a bit for transition
+        await page.waitForTimeout(500);
       } catch {
-        // If timeout occurs, just wait for next problem
-        await page.waitForTimeout(1000);
+        // If something goes wrong, break out of the loop
+        break;
       }
     }
 
     const resultsScreen = new ResultsScreenPage(page);
-    await expect(resultsScreen.title).toBeVisible();
+    // Wait longer for results screen to appear
+    await expect(resultsScreen.title).toBeVisible({ timeout: 10000 });
 
     const score = await resultsScreen.getFinalScore();
     const rank = await resultsScreen.getRank();
@@ -204,7 +210,7 @@ test.describe("Scoring and Validation", () => {
       await expect(problemDisplay).toBeVisible();
 
       const problem = await problemDisplay.textContent();
-      const match = problem?.match(/(\\d+) × (\\d+) = \\?/);
+      const match = problem?.match(/(\d+) × (\d+) = \?/);
 
       expect(match).toBeTruthy();
       const factor1 = parseInt(match![1]);

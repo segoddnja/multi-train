@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
-import { StartScreenPage } from "../pages/StartScreenPage.js";
 import { GameScreenPage } from "../pages/GameScreenPage.js";
 import { ResultsScreenPage } from "../pages/ResultsScreenPage.js";
+import { StartScreenPage } from "../pages/StartScreenPage.js";
 
 export class TestUtils {
   static async playCompleteGame(
@@ -31,20 +31,34 @@ export class TestUtils {
     await startScreen.startGame();
 
     // Play through all problems
-    for (let i = 0; i < 10; i++) {
+    let problemCount = 0;
+    const maxProblems = 10;
+    const maxAttempts = 15; // Failsafe to prevent infinite loops
+
+    while (problemCount < maxProblems && problemCount < maxAttempts) {
+      // Check if we've reached the results screen
+      if (await resultsScreen.isVisible()) {
+        break;
+      }
+
+      // Wait for the game screen to be visible
       await gameScreen.isVisible();
 
       if (gameMode === "input") {
         const problem = await gameScreen.getProblemText();
-        if (!problem) continue;
+        if (!problem) {
+          // Wait a bit and try again
+          await page.waitForTimeout(300);
+          continue;
+        }
         const answer = TestUtils.calculateAnswer(problem, answerCorrectly);
 
         if (answerSpeed === "slow") {
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(800); // Further reduced
         } else if (answerSpeed === "fast") {
-          await page.waitForTimeout(100);
+          await page.waitForTimeout(30); // Further reduced
         } else {
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(200); // Further reduced
         }
 
         await gameScreen.typeAnswer(answer.toString());
@@ -53,15 +67,18 @@ export class TestUtils {
         // Multiple choice mode
         const options = await gameScreen.getMultipleChoiceOptions();
         const problem = await gameScreen.getProblemText();
-        if (!problem) continue;
+        if (!problem) {
+          await page.waitForTimeout(300);
+          continue;
+        }
         const correctAnswer = TestUtils.calculateAnswer(problem, true);
 
         if (answerSpeed === "slow") {
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(800); // Further reduced
         } else if (answerSpeed === "fast") {
-          await page.waitForTimeout(100);
+          await page.waitForTimeout(30); // Further reduced
         } else {
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(200); // Further reduced
         }
 
         if (answerCorrectly) {
@@ -75,12 +92,24 @@ export class TestUtils {
         }
       }
 
-      // Wait for next problem or results
-      await page.waitForTimeout(1000);
+      problemCount++;
+
+      // Wait for transition - either to next problem or results
+      await page.waitForTimeout(300); // Reduced
+
+      // Check if we've reached the results screen
+      if (await resultsScreen.isVisible()) {
+        break;
+      }
     }
 
-    // Wait for results screen
-    await resultsScreen.isVisible();
+    // Wait for results screen with a timeout
+    let waitAttempts = 0;
+    while (!(await resultsScreen.isVisible()) && waitAttempts < 20) {
+      await page.waitForTimeout(500);
+      waitAttempts++;
+    }
+
     return resultsScreen;
   }
 
