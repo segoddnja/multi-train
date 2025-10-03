@@ -111,7 +111,7 @@ jobs:
         run: npm ci
 
       - name: Build application
-        run: npm run build
+        run: VITE_DEPLOY_TARGET=gh-pages npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
