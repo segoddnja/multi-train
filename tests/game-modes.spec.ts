@@ -133,7 +133,18 @@ test.describe("Game Modes", () => {
     // Answer and move to next problem
     await gameScreen.typeAnswer("12");
     await gameScreen.submitAnswer();
-    await page.waitForTimeout(500);
+
+    // Wait for feedback to complete and input to be re-enabled
+    await gameScreen.answerInput.waitFor({ state: "attached" });
+    await page.waitForFunction(
+      () => {
+        const input = document.querySelector(
+          ".answer-input"
+        ) as HTMLInputElement;
+        return input && !input.disabled;
+      },
+      { timeout: 2000 }
+    );
 
     // Input should be focused on next problem
     const isFocusedNext = await gameScreen.answerInput.evaluate(

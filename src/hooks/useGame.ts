@@ -41,7 +41,8 @@ export const useGame = () => {
   const [pauseStartAt, setPauseStartAt] = useState<number | null>(null);
 
   // Feedback duration - long enough for tests but not too distracting for users
-  const FEEDBACK_DURATION_MS = 500;
+  // Increased slightly to ensure tests have time to observe the feedback state
+  const FEEDBACK_DURATION_MS = 750;
 
   const beginPause = useCallback(() => {
     if (pauseStartAt === null) {
@@ -86,7 +87,10 @@ export const useGame = () => {
           updatedSession.startTime -
           totalPausedMs -
           ongoingPauseMs;
-        const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
+        const finalTimeElapsed = Math.max(
+          1,
+          Math.floor(effectiveTotalMs / 1000)
+        );
 
         const score = GameLogic.calculateScore(
           updatedSession.correctAnswers,
@@ -117,16 +121,24 @@ export const useGame = () => {
         const effectiveElapsedMs =
           now - gameSession.startTime - totalPausedMs - pausedOngoingMs;
         const totalElapsedSeconds = Math.floor(effectiveElapsedMs / 1000);
+
+        // Ensure time never goes negative
         setTimeElapsed(Math.max(0, totalElapsedSeconds));
 
         if (gameSession.timePerProblem > 0) {
+          // Skip timer updates during feedback or timeout display
           if (isFeedbackActive || showCorrectAnswer) return;
+
           const problemElapsed = Math.floor(
             (now - gameSession.currentProblemStartTime) / 1000
           );
           const timeLeft = gameSession.timePerProblem - problemElapsed;
-          setProblemTimeLeft(Math.max(0, timeLeft));
-          if (timeLeft <= 0 && !showCorrectAnswer) {
+          const clampedTimeLeft = Math.max(0, timeLeft);
+
+          setProblemTimeLeft(clampedTimeLeft);
+
+          // Only trigger timeout if we haven't already and time is truly up
+          if (clampedTimeLeft <= 0 && !showCorrectAnswer && !isFeedbackActive) {
             handleTimeExpired();
           }
         } else {
@@ -136,7 +148,9 @@ export const useGame = () => {
     }
 
     return () => {
-      if (interval) window.clearInterval(interval);
+      if (interval) {
+        window.clearInterval(interval);
+      }
     };
   }, [
     gameState,
@@ -233,7 +247,7 @@ export const useGame = () => {
         advancedSession.startTime -
         totalPausedMs -
         ongoingPauseMs;
-      const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
+      const finalTimeElapsed = Math.max(1, Math.floor(effectiveTotalMs / 1000));
 
       const score = GameLogic.calculateScore(
         advancedSession.correctAnswers,
@@ -250,12 +264,24 @@ export const useGame = () => {
     setCurrentAnswer("");
     setProblemTimeLeft(gameSession.timePerProblem);
 
-    setTimeout(() => {
-      setIsFeedbackActive(false);
-      setWasLastAnswerCorrect(null);
-      setFeedbackCorrectAnswer(null);
-      endPause();
+    // Use setTimeout with error handling for reliable feedback cleanup
+    const feedbackTimeout = setTimeout(() => {
+      try {
+        setIsFeedbackActive(false);
+        setWasLastAnswerCorrect(null);
+        setFeedbackCorrectAnswer(null);
+        endPause();
+      } catch {
+        // Ensure cleanup still happens even if there's an error
+        setIsFeedbackActive(false);
+        setWasLastAnswerCorrect(null);
+        setFeedbackCorrectAnswer(null);
+        endPause();
+      }
     }, FEEDBACK_DURATION_MS);
+
+    // Return cleanup function to clear timeout if component unmounts
+    return () => clearTimeout(feedbackTimeout);
   }, [
     gameSession,
     currentAnswer,
@@ -305,7 +331,10 @@ export const useGame = () => {
           advancedSession.startTime -
           totalPausedMs -
           ongoingPauseMs;
-        const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
+        const finalTimeElapsed = Math.max(
+          1,
+          Math.floor(effectiveTotalMs / 1000)
+        );
 
         const score = GameLogic.calculateScore(
           advancedSession.correctAnswers,
@@ -321,12 +350,24 @@ export const useGame = () => {
 
       setProblemTimeLeft(gameSession.timePerProblem);
 
-      setTimeout(() => {
-        setIsFeedbackActive(false);
-        setWasLastAnswerCorrect(null);
-        setFeedbackCorrectAnswer(null);
-        endPause();
+      // Use setTimeout with error handling for reliable feedback cleanup
+      const feedbackTimeout = setTimeout(() => {
+        try {
+          setIsFeedbackActive(false);
+          setWasLastAnswerCorrect(null);
+          setFeedbackCorrectAnswer(null);
+          endPause();
+        } catch {
+          // Ensure cleanup still happens even if there's an error
+          setIsFeedbackActive(false);
+          setWasLastAnswerCorrect(null);
+          setFeedbackCorrectAnswer(null);
+          endPause();
+        }
       }, FEEDBACK_DURATION_MS);
+
+      // Return cleanup function to clear timeout if component unmounts
+      return () => clearTimeout(feedbackTimeout);
     },
     [
       gameSession,

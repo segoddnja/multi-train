@@ -19,6 +19,11 @@ export class GameScreenPage {
   readonly correctFeedback: Locator;
   readonly incorrectFeedback: Locator;
   readonly encouragementMessage: Locator;
+  readonly feedbackElements: {
+    correct: Locator;
+    incorrect: Locator;
+    timeout: Locator;
+  };
 
   constructor(page: Page) {
     this.page = page;
@@ -46,6 +51,13 @@ export class GameScreenPage {
     this.correctFeedback = page.locator("text=✅ Correct!");
     this.incorrectFeedback = page.locator("text=❌ Not quite");
     this.encouragementMessage = page.locator("text=Nice work—keep it up!");
+
+    // More reliable feedback selectors using data-testid
+    this.feedbackElements = {
+      correct: page.locator('[data-testid="correct-feedback"]'),
+      incorrect: page.locator('[data-testid="incorrect-feedback"]'),
+      timeout: page.locator('[data-testid="timeout-feedback"]'),
+    };
   }
 
   async isVisible() {
@@ -190,5 +202,21 @@ export class GameScreenPage {
     } catch {
       return true; // If we can't find the timer, assume unlimited time
     }
+  }
+
+  async isFeedbackActive() {
+    // Check if any feedback element is currently visible using the reliable data-testid selectors
+    const correctVisible = await this.feedbackElements.correct.isVisible();
+    const incorrectVisible = await this.feedbackElements.incorrect.isVisible();
+    const timeoutVisible = await this.feedbackElements.timeout.isVisible();
+
+    return correctVisible || incorrectVisible || timeoutVisible;
+  }
+
+  async waitForFeedbackToDisappear(timeout = 3000) {
+    // Wait for all feedback elements to disappear
+    await this.feedbackElements.correct.waitFor({ state: "hidden", timeout });
+    await this.feedbackElements.incorrect.waitFor({ state: "hidden", timeout });
+    await this.feedbackElements.timeout.waitFor({ state: "hidden", timeout });
   }
 }

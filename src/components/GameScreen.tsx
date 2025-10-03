@@ -94,7 +94,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     // Time up flow keeps existing content for tests
     if (showCorrectAnswer) {
       return (
-        <div className="feedback-pop animate-pulse">
+        <div
+          className="feedback-pop animate-pulse"
+          data-testid="timeout-feedback"
+        >
           <div className="text-2xl text-red-600 font-bold mb-1">
             ⏰ Time's up!
           </div>
@@ -108,7 +111,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     if (isFeedbackActive && wasLastAnswerCorrect !== null) {
       if (wasLastAnswerCorrect) {
         return (
-          <div className="feedback-pop animate-pulse">
+          <div
+            className="feedback-pop animate-pulse"
+            data-testid="correct-feedback"
+          >
             <div className="text-2xl font-extrabold text-green-600">
               ✅ Correct!
             </div>
@@ -117,7 +123,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         );
       }
       return (
-        <div className="feedback-pop animate-pulse">
+        <div
+          className="feedback-pop animate-pulse"
+          data-testid="incorrect-feedback"
+        >
           <div className="text-2xl font-extrabold text-red-600">
             ❌ Not quite
           </div>
@@ -133,7 +142,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="card max-w-lg w-full">
+      <div
+        className="card max-w-lg w-full"
+        data-feedback-active={isFeedbackActive || showCorrectAnswer}
+      >
         {/* Header with progress and stats */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
