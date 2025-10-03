@@ -5,12 +5,19 @@ import { GameLogic } from "../utils/gameLogic";
 interface StartScreenProps {
   // eslint-disable-next-line no-unused-vars
   onStartGame: (settings?: GameSettings) => void;
+  savedSettings: Pick<GameSettings, "mode" | "difficulty">;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
-  const [selectedMode, setSelectedMode] = useState<GameMode>("input");
-  const [selectedDifficulty, setSelectedDifficulty] =
-    useState<DifficultyLevel>("easy");
+export const StartScreen: React.FC<StartScreenProps> = ({
+  onStartGame,
+  savedSettings,
+}) => {
+  const [selectedMode, setSelectedMode] = useState<GameMode>(
+    savedSettings.mode
+  );
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>(
+    savedSettings.difficulty
+  );
 
   const handleStartGame = () => {
     const settings: GameSettings = {

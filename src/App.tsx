@@ -14,6 +14,7 @@ function App() {
     isFeedbackActive,
     wasLastAnswerCorrect,
     feedbackCorrectAnswer,
+    savedSettings,
     startGame,
     submitAnswer,
     submitMultipleChoiceAnswer,
@@ -25,7 +26,9 @@ function App() {
 
   const renderCurrentScreen = () => {
     if (gameState === "start") {
-      return <StartScreen onStartGame={startGame} />;
+      return (
+        <StartScreen onStartGame={startGame} savedSettings={savedSettings} />
+      );
     }
 
     if (gameState === "playing") {
@@ -80,14 +83,18 @@ function App() {
 
     if (gameState === "finished") {
       if (!gameScore) {
-        return <StartScreen onStartGame={startGame} />;
+        return (
+          <StartScreen onStartGame={startGame} savedSettings={savedSettings} />
+        );
       }
 
       return <ResultsScreen score={gameScore} onPlayAgain={resetGame} />;
     }
 
     // Default case
-    return <StartScreen onStartGame={startGame} />;
+    return (
+      <StartScreen onStartGame={startGame} savedSettings={savedSettings} />
+    );
   };
 
   return <div className="App">{renderCurrentScreen()}</div>;

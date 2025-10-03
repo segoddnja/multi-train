@@ -7,6 +7,7 @@ import type {
   Problem,
 } from "../types/game";
 import { GameLogic } from "../utils/gameLogic";
+import { loadGameSettings, saveGameSettings } from "../utils/settingsStorage";
 
 const DEFAULT_SETTINGS: GameSettings = {
   numberOfProblems: 10,
@@ -24,6 +25,9 @@ export const useGame = () => {
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
   const [problemTimeLeft, setProblemTimeLeft] = useState<number>(10);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState<boolean>(false);
+
+  // Load saved settings or use defaults
+  const [savedSettings, setSavedSettings] = useState(() => loadGameSettings());
 
   // Feedback & timing pause state
   const [isFeedbackActive, setIsFeedbackActive] = useState<boolean>(false);
@@ -144,30 +148,50 @@ export const useGame = () => {
     handleTimeExpired,
   ]);
 
-  const startGame = useCallback((settings: GameSettings = DEFAULT_SETTINGS) => {
-    const problems = GameLogic.generateProblems(settings);
-    const timePerProblem = GameLogic.getTimePerProblem(settings.difficulty);
+  const startGame = useCallback(
+    (
+      settings: GameSettings = {
+        ...DEFAULT_SETTINGS,
+        ...savedSettings,
+      }
+    ) => {
+      // Save the selected mode and difficulty to localStorage
+      saveGameSettings({
+        mode: settings.mode,
+        difficulty: settings.difficulty,
+      });
 
-    const newSession: GameSession = {
-      problems,
-      currentProblemIndex: 0,
-      startTime: Date.now(),
-      currentProblemStartTime: Date.now(),
-      timePerProblem,
-      userAnswers: {},
-      correctAnswers: 0,
-      totalProblems: problems.length,
-      mode: settings.mode,
-      difficulty: settings.difficulty,
-    };
+      // Update our local saved settings state
+      setSavedSettings({
+        mode: settings.mode,
+        difficulty: settings.difficulty,
+      });
 
-    setCurrentAnswer("");
-    setTimeElapsed(0);
-    setGameScore(null);
-    setGameSession(newSession);
-    setGameState("playing");
-    setProblemTimeLeft(timePerProblem);
-  }, []);
+      const problems = GameLogic.generateProblems(settings);
+      const timePerProblem = GameLogic.getTimePerProblem(settings.difficulty);
+
+      const newSession: GameSession = {
+        problems,
+        currentProblemIndex: 0,
+        startTime: Date.now(),
+        currentProblemStartTime: Date.now(),
+        timePerProblem,
+        userAnswers: {},
+        correctAnswers: 0,
+        totalProblems: problems.length,
+        mode: settings.mode,
+        difficulty: settings.difficulty,
+      };
+
+      setCurrentAnswer("");
+      setTimeElapsed(0);
+      setGameScore(null);
+      setGameSession(newSession);
+      setGameState("playing");
+      setProblemTimeLeft(timePerProblem);
+    },
+    [savedSettings, setSavedSettings]
+  );
 
   const submitAnswer = useCallback(() => {
     if (
@@ -353,6 +377,13 @@ export const useGame = () => {
     return { current, total, percentage };
   }, [gameSession]);
 
+  const getDefaultSettings = useCallback((): GameSettings => {
+    return {
+      ...DEFAULT_SETTINGS,
+      ...savedSettings,
+    };
+  }, [savedSettings]);
+
   return {
     gameState,
     gameSession,
@@ -364,6 +395,8 @@ export const useGame = () => {
     isFeedbackActive,
     wasLastAnswerCorrect,
     feedbackCorrectAnswer,
+    savedSettings,
+    getDefaultSettings,
     startGame,
     submitAnswer,
     submitMultipleChoiceAnswer,
