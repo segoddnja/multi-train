@@ -1,7 +1,7 @@
-import { useGame } from "./hooks/useGame";
-import { StartScreen } from "./components/StartScreen";
 import { GameScreen } from "./components/GameScreen";
 import { ResultsScreen } from "./components/ResultsScreen";
+import { StartScreen } from "./components/StartScreen";
+import { useGame } from "./hooks/useGame";
 
 function App() {
   const {
@@ -11,6 +11,9 @@ function App() {
     timeElapsed,
     problemTimeLeft,
     showCorrectAnswer,
+    isFeedbackActive,
+    wasLastAnswerCorrect,
+    feedbackCorrectAnswer,
     startGame,
     submitAnswer,
     submitMultipleChoiceAnswer,
@@ -65,6 +68,9 @@ function App() {
           correctAnswers={gameSession.correctAnswers}
           problemTimeLeft={problemTimeLeft}
           showCorrectAnswer={showCorrectAnswer}
+          isFeedbackActive={isFeedbackActive}
+          wasLastAnswerCorrect={wasLastAnswerCorrect}
+          feedbackCorrectAnswer={feedbackCorrectAnswer}
           gameMode={gameSession.mode}
           difficulty={gameSession.difficulty}
           maxTimePerProblem={gameSession.timePerProblem}

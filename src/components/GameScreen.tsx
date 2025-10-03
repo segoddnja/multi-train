@@ -14,6 +14,9 @@ interface GameScreenProps {
   correctAnswers: number;
   problemTimeLeft: number;
   showCorrectAnswer: boolean;
+  isFeedbackActive: boolean;
+  wasLastAnswerCorrect: boolean | null;
+  feedbackCorrectAnswer: number | null;
   gameMode: GameMode;
   difficulty: DifficultyLevel;
   maxTimePerProblem: number;
@@ -30,6 +33,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   correctAnswers,
   problemTimeLeft,
   showCorrectAnswer,
+  isFeedbackActive,
+  wasLastAnswerCorrect,
+  feedbackCorrectAnswer,
   gameMode,
   maxTimePerProblem,
 }) => {
@@ -41,6 +47,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       inputRef.current.focus();
     }
   }, [problem.id]);
+
+  // Also refocus when feedback ends and input becomes enabled again
+  useEffect(() => {
+    if (!isFeedbackActive && !showCorrectAnswer && gameMode === "input") {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [isFeedbackActive, showCorrectAnswer, gameMode]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -74,6 +89,47 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     maxTimePerProblem === 0 ? 100 : (problemTimeLeft / maxTimePerProblem) * 100;
 
   const isUnlimitedTime = maxTimePerProblem === 0;
+
+  const renderFeedback = () => {
+    // Time up flow keeps existing content for tests
+    if (showCorrectAnswer) {
+      return (
+        <div className="feedback-pop animate-pulse">
+          <div className="text-2xl text-red-600 font-bold mb-1">
+            ⏰ Time's up!
+          </div>
+          <div className="text-lg text-green-600 font-semibold">
+            Correct answer: {problem.answer}
+          </div>
+        </div>
+      );
+    }
+
+    if (isFeedbackActive && wasLastAnswerCorrect !== null) {
+      if (wasLastAnswerCorrect) {
+        return (
+          <div className="feedback-pop animate-pulse">
+            <div className="text-2xl font-extrabold text-green-600">
+              ✅ Correct!
+            </div>
+            <div className="text-sm text-gray-600">Nice work—keep it up!</div>
+          </div>
+        );
+      }
+      return (
+        <div className="feedback-pop animate-pulse">
+          <div className="text-2xl font-extrabold text-red-600">
+            ❌ Not quite
+          </div>
+          <div className="text-lg text-green-600 font-semibold">
+            Correct answer: {feedbackCorrectAnswer ?? problem.answer}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -145,19 +201,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             {problem.factor1} × {problem.factor2} = ?
           </div>
 
-          {showCorrectAnswer ? (
-            <div className="mb-6">
-              <div className="text-2xl text-red-600 font-bold mb-2">
-                ⏰ Time's up!
-              </div>
-              <div className="text-xl text-green-600 font-semibold">
-                Correct answer: {problem.answer}
-              </div>
-              <div className="text-sm text-gray-500 mt-2">
-                Moving to next problem...
-              </div>
-            </div>
-          ) : gameMode === "input" ? (
+          {/* Feedback area with fixed height to avoid layout shift */}
+          <div className="mb-6 min-h-[64px] flex items-center justify-center">
+            {renderFeedback()}
+          </div>
+
+          {gameMode === "input" ? (
             <>
               <div className="mb-6">
                 <input
@@ -169,13 +218,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   placeholder="?"
                   className="answer-input w-32"
                   autoComplete="off"
-                  disabled={showCorrectAnswer}
+                  disabled={showCorrectAnswer || isFeedbackActive}
                 />
               </div>
 
               <button
                 onClick={onSubmitAnswer}
-                disabled={currentAnswer.trim() === "" || showCorrectAnswer}
+                disabled={
+                  currentAnswer.trim() === "" ||
+                  showCorrectAnswer ||
+                  isFeedbackActive
+                }
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Submit Answer
@@ -189,7 +242,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   <button
                     key={index}
                     onClick={() => onSubmitMultipleChoice(choice)}
-                    disabled={showCorrectAnswer}
+                    disabled={showCorrectAnswer || isFeedbackActive}
                     className="btn-secondary text-lg py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-100 hover:border-blue-400 transition-colors"
                   >
                     {choice}

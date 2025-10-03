@@ -25,33 +25,64 @@ export const useGame = () => {
   const [problemTimeLeft, setProblemTimeLeft] = useState<number>(10);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState<boolean>(false);
 
+  // Feedback & timing pause state
+  const [isFeedbackActive, setIsFeedbackActive] = useState<boolean>(false);
+  const [wasLastAnswerCorrect, setWasLastAnswerCorrect] = useState<
+    boolean | null
+  >(null);
+  const [feedbackCorrectAnswer, setFeedbackCorrectAnswer] = useState<
+    number | null
+  >(null);
+  const [totalPausedMs, setTotalPausedMs] = useState<number>(0);
+  const [pauseStartAt, setPauseStartAt] = useState<number | null>(null);
+
+  // Feedback duration - long enough for tests but not too distracting for users
+  const FEEDBACK_DURATION_MS = 500;
+
+  const beginPause = useCallback(() => {
+    if (pauseStartAt === null) {
+      setPauseStartAt(Date.now());
+    }
+  }, [pauseStartAt]);
+
+  const endPause = useCallback(() => {
+    setPauseStartAt((start) => {
+      if (start == null) return null;
+      const delta = Date.now() - start;
+      setTotalPausedMs((prev) => prev + delta);
+      return null;
+    });
+  }, []);
+
   const handleTimeExpired = useCallback(() => {
     if (!gameSession) return;
-
     const currentProblem =
       gameSession.problems[gameSession.currentProblemIndex];
     setShowCorrectAnswer(true);
+    beginPause();
 
-    // Show correct answer for 2 seconds, then move to next problem
     setTimeout(() => {
       const updatedSession: GameSession = {
         ...gameSession,
         userAnswers: {
           ...gameSession.userAnswers,
-          [currentProblem.id]: -1, // Mark as failed (no answer)
+          [currentProblem.id]: -1,
         },
         currentProblemIndex: gameSession.currentProblemIndex + 1,
         currentProblemStartTime: Date.now(),
       };
 
-      // Check if game is finished
       if (
         updatedSession.currentProblemIndex >= updatedSession.problems.length
       ) {
         updatedSession.endTime = Date.now();
-        const finalTimeElapsed = Math.floor(
-          (updatedSession.endTime - updatedSession.startTime) / 1000
-        );
+        const ongoingPauseMs = pauseStartAt ? Date.now() - pauseStartAt : 0;
+        const effectiveTotalMs =
+          updatedSession.endTime -
+          updatedSession.startTime -
+          totalPausedMs -
+          ongoingPauseMs;
+        const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
 
         const score = GameLogic.calculateScore(
           updatedSession.correctAnswers,
@@ -67,47 +98,53 @@ export const useGame = () => {
 
       setCurrentAnswer("");
       setShowCorrectAnswer(false);
+      endPause();
       setProblemTimeLeft(gameSession.timePerProblem);
     }, 2000);
-  }, [gameSession]);
+  }, [gameSession, beginPause, endPause, pauseStartAt, totalPausedMs]);
 
   // Timer effects
   useEffect(() => {
-    let interval: number;
-
+    let interval: number | undefined;
     if (gameState === "playing" && gameSession) {
-      interval = setInterval(() => {
+      interval = window.setInterval(() => {
         const now = Date.now();
-        const totalElapsed = Math.floor((now - gameSession.startTime) / 1000);
-        setTimeElapsed(totalElapsed);
+        const pausedOngoingMs = pauseStartAt ? now - pauseStartAt : 0;
+        const effectiveElapsedMs =
+          now - gameSession.startTime - totalPausedMs - pausedOngoingMs;
+        const totalElapsedSeconds = Math.floor(effectiveElapsedMs / 1000);
+        setTimeElapsed(Math.max(0, totalElapsedSeconds));
 
-        // Only handle timer for limited time modes
         if (gameSession.timePerProblem > 0) {
+          if (isFeedbackActive || showCorrectAnswer) return;
           const problemElapsed = Math.floor(
             (now - gameSession.currentProblemStartTime) / 1000
           );
           const timeLeft = gameSession.timePerProblem - problemElapsed;
-
           setProblemTimeLeft(Math.max(0, timeLeft));
-
-          // Auto-submit if time runs out
           if (timeLeft <= 0 && !showCorrectAnswer) {
             handleTimeExpired();
           }
         } else {
-          // Unlimited time mode - no countdown
           setProblemTimeLeft(0);
         }
-      }, 100); // Update more frequently for smooth progress bar
+      }, 100);
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) window.clearInterval(interval);
     };
-  }, [gameState, gameSession, showCorrectAnswer, handleTimeExpired]);
+  }, [
+    gameState,
+    gameSession,
+    showCorrectAnswer,
+    isFeedbackActive,
+    totalPausedMs,
+    pauseStartAt,
+    handleTimeExpired,
+  ]);
 
   const startGame = useCallback((settings: GameSettings = DEFAULT_SETTINGS) => {
-    // Generate problems using the GameLogic with mode support
     const problems = GameLogic.generateProblems(settings);
     const timePerProblem = GameLogic.getTimePerProblem(settings.difficulty);
 
@@ -124,7 +161,6 @@ export const useGame = () => {
       difficulty: settings.difficulty,
     };
 
-    // Update state in the correct order
     setCurrentAnswer("");
     setTimeElapsed(0);
     setGameScore(null);
@@ -134,7 +170,12 @@ export const useGame = () => {
   }, []);
 
   const submitAnswer = useCallback(() => {
-    if (!gameSession || currentAnswer.trim() === "" || showCorrectAnswer)
+    if (
+      !gameSession ||
+      currentAnswer.trim() === "" ||
+      showCorrectAnswer ||
+      isFeedbackActive
+    )
       return;
 
     const currentProblem =
@@ -142,7 +183,12 @@ export const useGame = () => {
     const userAnswer = parseInt(currentAnswer);
     const isCorrect = GameLogic.isAnswerCorrect(currentProblem, userAnswer);
 
-    const updatedSession: GameSession = {
+    setWasLastAnswerCorrect(isCorrect);
+    setFeedbackCorrectAnswer(currentProblem.answer);
+    setIsFeedbackActive(true);
+    beginPause();
+
+    const advancedSession: GameSession = {
       ...gameSession,
       userAnswers: {
         ...gameSession.userAnswers,
@@ -153,32 +199,54 @@ export const useGame = () => {
       currentProblemStartTime: Date.now(),
     };
 
-    // Check if game is finished
-    if (updatedSession.currentProblemIndex >= updatedSession.problems.length) {
-      updatedSession.endTime = Date.now();
-      const finalTimeElapsed = Math.floor(
-        (updatedSession.endTime - updatedSession.startTime) / 1000
-      );
+    const finished =
+      advancedSession.currentProblemIndex >= advancedSession.problems.length;
+    if (finished) {
+      advancedSession.endTime = Date.now();
+      const ongoingPauseMs = pauseStartAt ? Date.now() - pauseStartAt : 0;
+      const effectiveTotalMs =
+        advancedSession.endTime -
+        advancedSession.startTime -
+        totalPausedMs -
+        ongoingPauseMs;
+      const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
 
       const score = GameLogic.calculateScore(
-        updatedSession.correctAnswers,
-        updatedSession.totalProblems,
+        advancedSession.correctAnswers,
+        advancedSession.totalProblems,
         finalTimeElapsed
       );
 
       setGameScore(score);
       setGameState("finished");
     } else {
-      setGameSession(updatedSession);
+      setGameSession(advancedSession);
     }
 
     setCurrentAnswer("");
     setProblemTimeLeft(gameSession.timePerProblem);
-  }, [gameSession, currentAnswer, showCorrectAnswer]);
+
+    setTimeout(() => {
+      setIsFeedbackActive(false);
+      setWasLastAnswerCorrect(null);
+      setFeedbackCorrectAnswer(null);
+      endPause();
+    }, FEEDBACK_DURATION_MS);
+  }, [
+    gameSession,
+    currentAnswer,
+    showCorrectAnswer,
+    isFeedbackActive,
+    beginPause,
+    endPause,
+    pauseStartAt,
+    totalPausedMs,
+    FEEDBACK_DURATION_MS,
+  ]);
 
   const submitMultipleChoiceAnswer = useCallback(
     (selectedAnswer: number) => {
-      if (!gameSession || showCorrectAnswer) return;
+      if (!gameSession || showCorrectAnswer || isFeedbackActive) return;
 
       const currentProblem =
         gameSession.problems[gameSession.currentProblemIndex];
@@ -187,7 +255,12 @@ export const useGame = () => {
         selectedAnswer
       );
 
-      const updatedSession: GameSession = {
+      setWasLastAnswerCorrect(isCorrect);
+      setFeedbackCorrectAnswer(currentProblem.answer);
+      setIsFeedbackActive(true);
+      beginPause();
+
+      const advancedSession: GameSession = {
         ...gameSession,
         userAnswers: {
           ...gameSession.userAnswers,
@@ -198,30 +271,49 @@ export const useGame = () => {
         currentProblemStartTime: Date.now(),
       };
 
-      // Check if game is finished
-      if (
-        updatedSession.currentProblemIndex >= updatedSession.problems.length
-      ) {
-        updatedSession.endTime = Date.now();
-        const finalTimeElapsed = Math.floor(
-          (updatedSession.endTime - updatedSession.startTime) / 1000
-        );
+      const finished =
+        advancedSession.currentProblemIndex >= advancedSession.problems.length;
+      if (finished) {
+        advancedSession.endTime = Date.now();
+        const ongoingPauseMs = pauseStartAt ? Date.now() - pauseStartAt : 0;
+        const effectiveTotalMs =
+          advancedSession.endTime -
+          advancedSession.startTime -
+          totalPausedMs -
+          ongoingPauseMs;
+        const finalTimeElapsed = Math.floor(effectiveTotalMs / 1000);
 
         const score = GameLogic.calculateScore(
-          updatedSession.correctAnswers,
-          updatedSession.totalProblems,
+          advancedSession.correctAnswers,
+          advancedSession.totalProblems,
           finalTimeElapsed
         );
 
         setGameScore(score);
         setGameState("finished");
       } else {
-        setGameSession(updatedSession);
+        setGameSession(advancedSession);
       }
 
       setProblemTimeLeft(gameSession.timePerProblem);
+
+      setTimeout(() => {
+        setIsFeedbackActive(false);
+        setWasLastAnswerCorrect(null);
+        setFeedbackCorrectAnswer(null);
+        endPause();
+      }, FEEDBACK_DURATION_MS);
     },
-    [gameSession, showCorrectAnswer]
+    [
+      gameSession,
+      showCorrectAnswer,
+      isFeedbackActive,
+      beginPause,
+      endPause,
+      pauseStartAt,
+      totalPausedMs,
+      FEEDBACK_DURATION_MS,
+    ]
   );
 
   const resetGame = useCallback(() => {
@@ -232,6 +324,11 @@ export const useGame = () => {
     setTimeElapsed(0);
     setProblemTimeLeft(0);
     setShowCorrectAnswer(false);
+    setIsFeedbackActive(false);
+    setWasLastAnswerCorrect(null);
+    setFeedbackCorrectAnswer(null);
+    setTotalPausedMs(0);
+    setPauseStartAt(null);
   }, []);
 
   const getCurrentProblem = useCallback((): Problem | null => {
@@ -250,11 +347,9 @@ export const useGame = () => {
     percentage: number;
   } => {
     if (!gameSession) return { current: 0, total: 0, percentage: 0 };
-
     const current = gameSession.currentProblemIndex;
     const total = gameSession.problems.length;
     const percentage = total > 0 ? (current / total) * 100 : 0;
-
     return { current, total, percentage };
   }, [gameSession]);
 
@@ -266,6 +361,9 @@ export const useGame = () => {
     timeElapsed,
     problemTimeLeft,
     showCorrectAnswer,
+    isFeedbackActive,
+    wasLastAnswerCorrect,
+    feedbackCorrectAnswer,
     startGame,
     submitAnswer,
     submitMultipleChoiceAnswer,

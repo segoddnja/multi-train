@@ -15,6 +15,10 @@ export class GameScreenPage {
   readonly multipleChoiceButtons: Locator;
   readonly correctAnswerDisplay: Locator;
   readonly timeUpMessage: Locator;
+  readonly feedbackArea: Locator;
+  readonly correctFeedback: Locator;
+  readonly incorrectFeedback: Locator;
+  readonly encouragementMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -25,7 +29,10 @@ export class GameScreenPage {
       hasText: "Problem",
     });
     this.progressBar = page.locator(".bg-gradient-to-r");
-    this.timeElapsed = page.locator("div").filter({ hasText: /⏱️ \d+:\d+/ });
+    this.timeElapsed = page
+      .locator(".text-sm.text-gray-600")
+      .filter({ hasText: /⏱️ \d+:\d+/ })
+      .first();
     this.timeLeft = page.locator("span").filter({ hasText: /\d+s/ });
     this.timerBar = page.locator(".bg-gray-200 + div div");
     this.correctCount = page
@@ -35,6 +42,10 @@ export class GameScreenPage {
     this.multipleChoiceButtons = page.locator(".btn-secondary");
     this.correctAnswerDisplay = page.locator("text=/Correct answer: \\d+/");
     this.timeUpMessage = page.locator("text=⏰ Time's up!");
+    this.feedbackArea = page.locator(".feedback-pop");
+    this.correctFeedback = page.locator("text=✅ Correct!");
+    this.incorrectFeedback = page.locator("text=❌ Not quite");
+    this.encouragementMessage = page.locator("text=Nice work—keep it up!");
   }
 
   async isVisible() {
